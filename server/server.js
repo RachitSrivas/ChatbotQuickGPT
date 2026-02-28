@@ -17,10 +17,11 @@ await connectDB() ;
 //Stripe Webhooks
 app.post('/api/stripe' , express.raw({type: 'application/json'}) , stripeWebhooks)
 
+app.use(express.json())
 
 //Middleware
 app.use(cors())
-app.use(express.json())
+
 
 
 //Routes

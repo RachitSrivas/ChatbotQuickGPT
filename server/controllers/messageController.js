@@ -2,50 +2,59 @@ import imagekit from "../configs/imageKit.js"
 import Chat  from "../models/Chat.js"
 import User from "../models/User.js"
 import openai from "../configs/openai.js"
-
+import axios from "axios"
 
 
 //text-based ai chat message controller
-export const textMessageController = async(req , res)=>{
+export const textMessageController = async (req, res) => {
     try {
-        const userId = req.user._id
+        const userId = req.user._id;
 
-           if(req.user.credits<1){
-            return res.json({success:false , message: "you dont have enough credits to use this feature "})
+        if (req.user.credits < 1) {
+            return res.json({ success: false, message: "You don't have enough credits." });
         }
 
-        const {chatId , prompt} = req.body 
+        const { chatId, prompt } = req.body;
+        const chat = await Chat.findOne({ userId: userId.toString(), 
+                            _id: chatId.toString() });
 
-        const chat = await Chat.findOne({userId , _id : chatId })
+        if (!chat) {
+            return res.status(404).json({ success: false, message: "Chat not found" });
+        }
 
-        chat.messages.push({role : "user" , content: prompt , timestamp: Date.now() , isImage : false})
+        // 1. Push user message to DB first to ensure it's saved
+        chat.messages.push({ role: "user", content: prompt, timestamp: Date.now(), isImage: false });
+        await chat.save();
 
-        
-        const {choices} = await openai.chat.completions.create({
-            model : "gemini-2.0-flash" ,
-            messages:[
-                {
-                    role: "user" ,
-                    content:prompt ,
-                } ,
-            ] ,
-        }) ;
+        // 2. Wrap the AI call in its own try-catch for better error reporting
+        try {
+            const { choices } = await openai.chat.completions.create({
+                model: "gemini-1.5-flash-latest", // Use 1.5-flash for stability
+                messages: [{ role: "user", content: prompt }],
+            });
 
-        const reply = {...choices[0].message , timestamp : Date.now() , isImage : false }
-        res.json({success:true , reply})
+            const reply = { ...choices[0].message, timestamp: Date.now(), isImage: false };
+            chat.messages.push(reply);
+            
+            await chat.save();
+            await User.updateOne({ _id: userId }, { $inc: { credits: -1 } });
 
+            return res.json({ success: true, reply });
 
-        chat.messages.push(reply)
-        await chat.save()
-        await User.updateOne({_id:userId} , {$inc:{credits: -1}} )
-
-
+        } catch (aiError) {
+            console.error("Gemini API Error:", aiError.message);
+            // Handle the 429 specifically
+            return res.status(aiError.status || 500).json({ 
+                success: false, 
+                message: aiError.status === 429 ? "Rate limit reached. Please wait a minute." : "AI Service Error" 
+            });
+        }
 
     } catch (error) {
-         res.json({success:false , message: error.message}) ;
+        console.error("Controller Error:", error.message);
+        res.status(500).json({ success: false, message: error.message });
     }
 }
-
 
 
 
@@ -89,7 +98,7 @@ export const imageMessageController = async (req , res)=>{
         const uploadResponse = await imagekit.upload({
             file: base64Image ,
             fileName: `${Date.now()}.png` ,
-            folder: "quickgpt"
+            folder: "QUICKGPT"
         })
 
         const reply = {
