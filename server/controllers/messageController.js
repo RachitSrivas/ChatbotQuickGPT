@@ -1,8 +1,11 @@
 import imagekit from "../configs/imageKit.js"
 import Chat  from "../models/Chat.js"
 import User from "../models/User.js"
-import openai from "../configs/openai.js"
+import {client} from "../configs/mistralai.js"
 import axios from "axios"
+
+
+
 
 
 //text-based ai chat message controller
@@ -28,10 +31,14 @@ export const textMessageController = async (req, res) => {
 
         // 2. Wrap the AI call in its own try-catch for better error reporting
         try {
-            const { choices } = await openai.chat.completions.create({
-                model: "gemini-1.5-flash-latest", // Use 1.5-flash for stability
-                messages: [{ role: "user", content: prompt }],
-            });
+           const {choices} = await client.chat.complete({
+  model: "mistral-small-latest",
+  messages: [
+    { role: "user", content: prompt }
+  ]
+});
+
+
 
             const reply = { ...choices[0].message, timestamp: Date.now(), isImage: false };
             chat.messages.push(reply);

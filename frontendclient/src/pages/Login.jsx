@@ -2,6 +2,7 @@ import React from 'react'
 import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
+import axios from 'axios'
 
 function Login() {
 
@@ -9,7 +10,7 @@ function Login() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const {axios,settoken} = useAppContext() 
+    const {settoken} = useAppContext() 
 
 
     const handleSubmit = async(e)=>{
