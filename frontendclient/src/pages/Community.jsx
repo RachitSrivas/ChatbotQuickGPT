@@ -3,12 +3,13 @@ import React, { useEffect, useState } from 'react'
 import Loading from './Loading'
 import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
+import axios from 'axios'
 
 export default  function Community() {
 
   const [images,setimages] = useState([]) ;
   const [loading ,setloading] = useState(true)
-  const {axios} = useAppContext()
+  
 
   const fetchImages = async()=>{
   try {

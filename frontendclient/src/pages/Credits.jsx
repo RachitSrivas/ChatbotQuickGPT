@@ -4,12 +4,13 @@ import Loading from './Loading'
 import { dummyPlans } from '../assets/assets'
 import { useAppContext } from '../context/AppContext'
 import toast from 'react-hot-toast'
+import axios from 'axios'
 
 function Credits() {
 
   const [plans,setplans] = useState([])
   const [loading, setloading] = useState(true)
-  const {token , axios} = useAppContext()
+  const {token } = useAppContext()
 
 
 
