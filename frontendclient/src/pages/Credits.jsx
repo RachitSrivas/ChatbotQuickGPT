@@ -17,7 +17,7 @@ function Credits() {
   const fetchplans = async()=>{
    try {
       const {data} = await axios.get('/api/credit/plan' , {
-        headers : {Authorization:token}
+        headers : {Authorization:`Bearer ${token}`}
       })
 
       if(data.success){
@@ -36,7 +36,7 @@ function Credits() {
 
   const purchasePlan = async(planId)=>{
     try {
-       const {data} = await axios.post('/api/credit/purchase' , {planId},{headers:{Authorization : token}})
+       const {data} = await axios.post('/api/credit/purchase' , {planId},{headers:{Authorization : `Bearer ${token}`}})
        if(data.success){
         window.location.href = data.url
        }
