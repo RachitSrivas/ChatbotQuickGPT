@@ -31,11 +31,14 @@ export const textMessageController = async (req, res) => {
 
         // 2. Wrap the AI call in its own try-catch for better error reporting
         try {
+            const apiMessages = [
+                { role: "system", content: `You are a helpful AI assistant. Today's date is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.` },
+                ...chat.messages.map(msg => ({ role: msg.role, content: msg.content }))
+            ];
+
            const {choices} = await client.chat.complete({
   model: "mistral-small-latest",
-  messages: [
-    { role: "user", content: prompt }
-  ]
+  messages: apiMessages
 });
 
 
@@ -130,21 +133,5 @@ export const imageMessageController = async (req , res)=>{
         res.json({success:false , message: error.message}) ;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
